@@ -194,31 +194,40 @@ class PreProcess:
             p.join()
 
 
+def remove_multispeaker_outputs(exp_dir):
+    # Features too: index training reads every .npy in the feature folder.
+    for sub_dir in (
+        "0_gt_wavs",
+        "1_16k_wavs",
+        "2a_f0",
+        "2b-f0nsf",
+        "3_feature256",
+        "3_feature768",
+    ):
+        output_dir = os.path.join(exp_dir, sub_dir)
+        if not os.path.isdir(output_dir):
+            continue
+        for name in os.listdir(output_dir):
+            if name.startswith("ms") and name.endswith((".wav", ".npy")):
+                try:
+                    os.remove(os.path.join(output_dir, name))
+                except OSError:
+                    pass
+
+
 def preprocess_trainset(inp_root, sr, n_p, exp_dir, per):
     pp = PreProcess(sr, exp_dir, per)
     println(i18n("[数据切分] 开始"))
     if manifest_path:
         try:
             manifest = load_manifest(exp_dir)
-            for output_dir in (pp.gt_wavs_dir, pp.wavs16k_dir):
-                for name in os.listdir(output_dir):
-                    if name.startswith("ms") and name.endswith(".wav"):
-                        try:
-                            os.remove(os.path.join(output_dir, name))
-                        except OSError:
-                            pass
+            remove_multispeaker_outputs(exp_dir)
             pp.pipeline_mp_manifest(manifest["entries"], n_p)
         except ManifestError as error:
             println(i18n(error.key) % error.values)
             raise
     else:
-        for output_dir in (pp.gt_wavs_dir, pp.wavs16k_dir):
-            for name in os.listdir(output_dir):
-                if name.startswith("ms") and name.endswith(".wav"):
-                    try:
-                        os.remove(os.path.join(output_dir, name))
-                    except OSError:
-                        pass
+        remove_multispeaker_outputs(exp_dir)
         pp.pipeline_mp_inp_dir(inp_root, n_p)
     println(i18n("[数据切分] 完成"))
 

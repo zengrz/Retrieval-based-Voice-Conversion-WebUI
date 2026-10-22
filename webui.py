@@ -299,6 +299,13 @@ def experiment_path(exp_name):
     return os.path.join(now_dir, "logs", str(exp_name or "").strip())
 
 
+def require_experiment_name(exp_name):
+    exp_name = str(exp_name or "").strip()
+    if not exp_name:
+        raise ValueError(i18n("实验名不能为空"))
+    return exp_name
+
+
 def prepare_multispeaker_manifest(trainset_dir, exp_name):
     exp_path = experiment_path(exp_name)
     try:
@@ -852,6 +859,7 @@ def wait_train_processes(
 def run_preprocess_dataset(
     trainset_dir, exp_dir, sr, n_p, state, format_output=True, training_mode=None
 ):
+    exp_dir = require_experiment_name(exp_dir)
     sr = sr_dict[sr]
     os.makedirs("%s/logs/%s" % (now_dir, exp_dir), exist_ok=True)
     if is_multispeaker_mode(training_mode):
@@ -952,6 +960,7 @@ def run_extract_f0_feature(
     state,
     format_output=True,
 ):
+    exp_dir = require_experiment_name(exp_dir)
     if f0method not in ("pm", "rmvpe"):
         raise ValueError(i18n("仅支持pm和rmvpe音高提取算法"))
     log_path = "%s/logs/%s/extract_f0_feature.log" % (now_dir, exp_dir)
@@ -1166,6 +1175,7 @@ def run_train_model(
     format_output=True,
     training_mode=None,
 ):
+    exp_dir1 = require_experiment_name(exp_dir1)
     # 生成filelist
     exp_dir = "%s/logs/%s" % (now_dir, exp_dir1)
     os.makedirs(exp_dir, exist_ok=True)
@@ -1445,6 +1455,7 @@ def stop_train_model():
 def run_train_index(
     exp_dir1, version19, state, format_output=True, training_mode=None
 ):
+    exp_dir1 = require_experiment_name(exp_dir1)
     exp_dir = os.path.join(now_dir, "logs", exp_dir1)
     os.makedirs(exp_dir, exist_ok=True)
     log_path = os.path.join(exp_dir, "train_index.log")
@@ -2266,7 +2277,7 @@ with gr.Blocks(title="RVC WebUI", css=TRAINING_INFO_CSS) as app:
                             )
                             spk_id5 = gr.Slider(
                                 minimum=0,
-                                maximum=109,
+                                maximum=108,
                                 step=1,
                                 label=i18n("请指定说话人id"),
                                 value=0,

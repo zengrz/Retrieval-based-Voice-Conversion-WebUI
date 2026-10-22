@@ -78,6 +78,7 @@ def speaker_selector_updates(checkpoint, n_spk):
         {
             "visible": True,
             "maximum": max(n_spk - 1, 0),
+            "value": 0,
             "__type__": "update",
         },
         {"visible": False, "value": None, "__type__": "update"},

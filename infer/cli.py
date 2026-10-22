@@ -187,6 +187,14 @@ def collect_jobs(input_value, output_value, output_format, recursive):
         jobs.append((path, output_file, selected_format))
     if not jobs:
         raise ValueError("No supported audio files found in: %s" % input_path)
+    seen = {}
+    for path, output_file, _ in jobs:
+        if output_file in seen:
+            raise ValueError(
+                "Inputs map to the same output %s: %s, %s"
+                % (output_file, seen[output_file], path)
+            )
+        seen[output_file] = path
     return jobs
 
 
